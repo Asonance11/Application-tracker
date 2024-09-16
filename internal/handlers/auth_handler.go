@@ -4,12 +4,13 @@ import (
 	"net/http"
 
 	"github.com/Asonance11/Application-tracker/internal/models"
+	"github.com/Asonance11/Application-tracker/internal/types"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func Register(c *gin.Context) {
-	var user models.User
+	var user types.User
 
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
