@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Asonance11/Application-tracker/internal/config"
 	"github.com/Asonance11/Application-tracker/internal/models"
 	"github.com/Asonance11/Application-tracker/internal/types"
 	"github.com/gin-gonic/gin"
@@ -47,6 +48,7 @@ func Register(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
+	config.LoadEnvVariables()
 	var LoginData struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -68,7 +70,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.ID,
 		"exp":     time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
@@ -83,6 +85,6 @@ func Login(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
 
-	c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully"})
 
 }
