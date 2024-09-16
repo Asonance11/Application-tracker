@@ -22,25 +22,24 @@ func main() {
 	if err := database.InitDB(dsn); err != nil {
 		log.Fatalf("Failed to connect to the database %v", err)
 	}
-
 	db := database.GetDB()
 
 	if err := models.CreateJobStatusType(db); err != nil {
 		log.Fatalf("Failed to create job status type: %v", err)
 	}
 
-	if !db.Migrator().HasTable(&types.User{}) {
+	// Check if tables exist
+	if !db.Migrator().HasTable(&types.User{}) && !db.Migrator().HasTable(&types.Job{}) {
 		if err := db.AutoMigrate(&types.User{}, &types.Job{}); err != nil {
 			log.Fatalf("Failed to auto migrate: %v", err)
 		}
 	} else {
-		log.Info("Users table already exists, skipping migration")
+		log.Println("Tables already exist, skipping auto migration")
 	}
 
 	r := gin.Default()
 
 	//Auth routes
-
 	r.POST("/register", handlers.Register)
 	r.POST("/login", handlers.Login)
 
