@@ -126,4 +126,41 @@ func UpdateJobApplication(c *gin.Context) {
 
 }
 
-func DeleteJobApplication(c *gin.Context) {}
+func DeleteJobApplication(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	authenticatedUser, ok := user.(*types.User)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user data"})
+		return
+	}
+
+	jobId := c.Param("id")
+
+	var job types.Job
+
+	if err := models.GetJobByID(jobId, &job); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Job application not found"})
+		return
+	}
+
+	if job.UserID != authenticatedUser.ID {
+		c.JSON(
+			http.StatusForbidden,
+			gin.H{"error": "You do not have permission to delete this job"},
+		)
+		return
+	}
+
+	if err := models.DeleteJob(&job); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete job"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Job application deleted succesfully"})
+
+}

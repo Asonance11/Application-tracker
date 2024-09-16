@@ -47,3 +47,11 @@ func UpdateJob(job *types.Job) error {
 	}
 	return nil
 }
+
+func DeleteJob(job *types.Job) error {
+	// Delete the job from the database
+	if err := database.GetDB().Delete(&job).Error; err != nil {
+		return err
+	}
+	return nil
+}
