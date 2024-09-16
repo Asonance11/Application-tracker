@@ -82,6 +82,48 @@ func ListJobApplications(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"jobs": result, "page": pageInt, "pageSize": pageSizeInt})
 }
 
-func UpdateJobApplication(c *gin.Context) {}
+func UpdateJobApplication(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	authenticatedUser, ok := user.(*types.User)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user data"})
+		return
+	}
+
+	jobId := c.Param("id")
+
+	var job types.Job
+
+	if err := models.GetJobByID(jobId, &job); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Job application not found"})
+		return
+	}
+
+	if job.UserID != authenticatedUser.ID {
+		c.JSON(
+			http.StatusForbidden,
+			gin.H{"error": "You do not have permission to update this job"},
+		)
+		return
+	}
+
+	if err := c.ShouldBindJSON(&job); err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := models.UpdateJob(&job); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update job"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Job application updated succesfully"})
+
+}
 
 func DeleteJobApplication(c *gin.Context) {}

@@ -33,3 +33,17 @@ func GetJobApplicationsByUserID(userID uint, limit int, offset int) ([]types.Job
 
 	return jobs, nil
 }
+
+func GetJobByID(id string, job *types.Job) error {
+	if err := database.GetDB().Where("id = ?", id).First(&job).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateJob(job *types.Job) error {
+	if err := database.GetDB().Save(&job).Error; err != nil {
+		return err
+	}
+	return nil
+}
