@@ -23,3 +23,13 @@ func CreateJob(job *types.Job) error {
 	}
 	return nil
 }
+
+func GetJobApplicationsByUserID(userID uint, limit int, offset int) ([]types.Job, error) {
+	var jobs []types.Job
+
+	if err := database.GetDB().Where("user_id = ?", userID).Limit(limit).Offset(offset).Find(&jobs).Error; err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
+}
