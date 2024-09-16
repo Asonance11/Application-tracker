@@ -47,7 +47,10 @@ func main() {
 	api := r.Group("/api")
 	api.Use(middleware.Auth())
 	{
+		api.GET("/jobs", handlers.ListJobApplications)
 		api.POST("/jobs", handlers.CreateJobApplication)
+		api.PUT("/jobs/:id", handlers.UpdateJobApplication)
+		api.DELETE("/jobs/:id", handlers.DeleteJobApplication)
 	}
 
 	r.Run()
