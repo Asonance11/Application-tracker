@@ -30,3 +30,18 @@ func GetUserByUsername(username string) (*types.User, error) {
 
 	return &user, nil
 }
+
+func GetUserByID(id uint) (*types.User, error) {
+	var user types.User
+
+	err := database.GetDB().First(&user, id).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, err
+		}
+
+		return nil, err
+	}
+
+	return &user, nil
+}
