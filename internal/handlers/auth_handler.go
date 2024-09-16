@@ -2,10 +2,13 @@ package handlers
 
 import (
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/Asonance11/Application-tracker/internal/models"
 	"github.com/Asonance11/Application-tracker/internal/types"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -14,6 +17,16 @@ func Register(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	existingUser, err := models.GetUserByUsername(user.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing user"})
+		return
+	}
+	if existingUser != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
 		return
 	}
 
@@ -34,5 +47,42 @@ func Register(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
+	var LoginData struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	if err := c.ShouldBindJSON(&LoginData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := models.GetUserByUsername(LoginData.Username)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(LoginData.Password)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+		"user_id": user.ID,
+		"exp":     time.Now().Add(time.Hour * 24 * 30).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
+
+	c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
 
 }
