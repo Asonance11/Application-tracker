@@ -29,8 +29,12 @@ func main() {
 		log.Fatalf("Failed to create job status type: %v", err)
 	}
 
-	if err := db.AutoMigrate(&types.User{}, &types.Job{}); err != nil {
-		log.Fatalf("Failed to auto migrate: %v", err)
+	if !db.Migrator().HasTable(&types.User{}) {
+		if err := db.AutoMigrate(&types.User{}, &types.Job{}); err != nil {
+			log.Fatalf("Failed to auto migrate: %v", err)
+		}
+	} else {
+		log.Info("Users table already exists, skipping migration")
 	}
 
 	r := gin.Default()
