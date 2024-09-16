@@ -4,8 +4,9 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	Username string
+	Username string `gorm:"unique"`
 	Password string
+	Jobs     []Job `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 type Job struct {
@@ -14,6 +15,7 @@ type Job struct {
 	CompanyName    string `gorm:"column:company_name"`
 	ExpectedSalary uint
 	Status         JobStatus `gorm:"type:job_status"`
+	UserID         uint
 }
 
 type JobStatus string
