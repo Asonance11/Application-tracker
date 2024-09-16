@@ -6,6 +6,7 @@ import (
 	"github.com/Asonance11/Application-tracker/internal/config"
 	"github.com/Asonance11/Application-tracker/internal/database"
 	"github.com/Asonance11/Application-tracker/internal/handlers"
+	"github.com/Asonance11/Application-tracker/internal/middleware"
 	"github.com/Asonance11/Application-tracker/internal/models"
 	"github.com/Asonance11/Application-tracker/internal/types"
 	"github.com/gin-gonic/gin"
@@ -38,6 +39,13 @@ func main() {
 
 	r.POST("/register", handlers.Register)
 	r.POST("/login", handlers.Login)
+
+	//Main routes
+	api := r.Group("/api")
+	api.Use(middleware.Auth())
+	{
+		api.GET("/jobs", handlers.ListJobApplications)
+	}
 
 	r.Run()
 }
