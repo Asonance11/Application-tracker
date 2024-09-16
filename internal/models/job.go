@@ -18,5 +18,8 @@ func CreateJobStatusType(db *gorm.DB) error {
 }
 
 func CreateJob(job *types.Job) error {
-	return database.GetDB().Create(job).Error
+	if err := database.GetDB().Create(job).Error; err != nil {
+		return err
+	}
+	return nil
 }
