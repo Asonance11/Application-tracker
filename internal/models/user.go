@@ -1,8 +1,11 @@
 package models
 
 import (
+	"errors"
+
 	"github.com/Asonance11/Application-tracker/internal/database"
 	"github.com/Asonance11/Application-tracker/internal/types"
+	"gorm.io/gorm"
 )
 
 func CreateUser(user *types.User) error {
@@ -11,4 +14,19 @@ func CreateUser(user *types.User) error {
 	}
 
 	return nil
+}
+
+func GetUserByUsername(username string) (*types.User, error) {
+	var user types.User
+
+	result := database.GetDB().Where("username = ?", username).First(&user)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, result.Error
+	}
+
+	return &user, nil
 }
