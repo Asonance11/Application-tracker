@@ -40,6 +40,39 @@ func CreateJobApplication(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Job application created successfully"})
 }
 
+func GetJobByID(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	authenticatedUser, ok := user.(*types.User)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user data"})
+		return
+	}
+
+	jobId := c.Param("id")
+
+	var job types.Job
+
+	if err := models.GetJobByID(jobId, &job); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Job application not found"})
+		return
+	}
+
+	if job.UserID != authenticatedUser.ID {
+		c.JSON(
+			http.StatusForbidden,
+			gin.H{"error": "You do not have permission to update this job"},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"job": job})
+}
+
 func ListJobApplications(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {

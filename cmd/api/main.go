@@ -49,6 +49,7 @@ func main() {
 	{
 		api.GET("/jobs", handlers.ListJobApplications)
 		api.POST("/jobs", handlers.CreateJobApplication)
+		api.GET("/jobs/:id", handlers.GetJobByID)
 		api.PUT("/jobs/:id", handlers.UpdateJobApplication)
 		api.DELETE("/jobs/:id", handlers.DeleteJobApplication)
 	}
