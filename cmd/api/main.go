@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/Asonance11/Application-tracker/internal/config"
@@ -17,6 +18,12 @@ func main() {
 	// Load env variables
 	config.LoadEnvVariables()
 	dsn := os.Getenv("DB_URL")
+
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "8000"
+	}
 
 	//initialize db
 	if err := database.InitDB(dsn); err != nil {
@@ -54,5 +61,5 @@ func main() {
 		api.DELETE("/jobs/:id", handlers.DeleteJobApplication)
 	}
 
-	r.Run()
+	r.Run(fmt.Sprintf(":%s", port))
 }
