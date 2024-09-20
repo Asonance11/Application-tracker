@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/Asonance11/Application-tracker/internal/config"
 	"github.com/Asonance11/Application-tracker/internal/database"
@@ -10,6 +11,7 @@ import (
 	"github.com/Asonance11/Application-tracker/internal/middleware"
 	"github.com/Asonance11/Application-tracker/internal/models"
 	"github.com/Asonance11/Application-tracker/internal/types"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
@@ -45,6 +47,18 @@ func main() {
 	}
 
 	r := gin.Default()
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // Allow your local frontend
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "http://localhost:3000"
+		},
+		MaxAge: 12 * time.Hour,
+	}))
 
 	//Auth routes
 	r.POST("/register", handlers.Register)
