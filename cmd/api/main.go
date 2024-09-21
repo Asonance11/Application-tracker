@@ -68,6 +68,7 @@ func main() {
 	api := r.Group("/api")
 	api.Use(middleware.Auth())
 	{
+		api.GET("/user", handlers.GetUser)
 		api.GET("/jobs", handlers.ListJobApplications)
 		api.POST("/jobs", handlers.CreateJobApplication)
 		api.GET("/jobs/:id", handlers.GetJobByID)

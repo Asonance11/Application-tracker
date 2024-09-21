@@ -88,3 +88,24 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "user": user})
 
 }
+
+func GetUser(c *gin.Context) {
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Type assert the user to the correct type
+	authenticatedUser, ok := user.(*types.User)
+	if !ok {
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{"error": "Failed to retrieve user information"},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": authenticatedUser})
+}
