@@ -83,14 +83,7 @@ func Login(c *gin.Context) {
 	}
 
 	c.SetSameSite(http.SameSiteNoneMode)
-	c.Header("Set-Cookie",
-		"Authorization="+tokenString+
-			"; Max-Age=2592000"+ // 30 days in seconds
-			"; Path=/"+
-			"; SameSite=None"+
-			"; Secure"+
-			"; HttpOnly"+
-			"; Partitioned")
+	c.SetCookie("Authorization", tokenString, 3600*24*30, "/", "", false, true)
 
 	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "user": user})
 
