@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 
@@ -79,7 +80,6 @@ func ListJobApplications(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-
 	authenticatedUser, ok := user.(*types.User)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user data"})
@@ -96,7 +96,6 @@ func ListJobApplications(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number"})
 		return
 	}
-
 	pageSizeInt, err := strconv.Atoi(pageSize)
 	if err != nil || pageSizeInt < 1 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page size"})
@@ -106,13 +105,29 @@ func ListJobApplications(c *gin.Context) {
 	// Calculate the offset for pagination
 	offset := (pageInt - 1) * pageSizeInt
 
+	// Get the total count of job applications
+	totalCount, err := models.GetTotalJobApplicationsCountByUserID(authenticatedUser.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch total count"})
+		return
+	}
+
+	// Calculate total pages
+	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSizeInt)))
+
 	result, err := models.GetJobApplicationsByUserID(authenticatedUser.ID, pageSizeInt, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch jobs"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"jobs": result, "page": pageInt, "pageSize": pageSizeInt})
+	c.JSON(http.StatusOK, gin.H{
+		"jobs":       result,
+		"page":       pageInt,
+		"pageSize":   pageSizeInt,
+		"totalPages": totalPages,
+		"totalCount": totalCount,
+	})
 }
 
 func UpdateJobApplication(c *gin.Context) {

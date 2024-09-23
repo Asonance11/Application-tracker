@@ -55,3 +55,11 @@ func DeleteJob(job *types.Job) error {
 	}
 	return nil
 }
+
+func GetTotalJobApplicationsCountByUserID(userID uint) (int64, error) {
+	var count int64
+	if err := database.GetDB().Model(&types.Job{}).Where("user_id = ?", userID).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
