@@ -10,6 +10,7 @@ import (
 	"github.com/Asonance11/Application-tracker/internal/types"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,6 +24,7 @@ func Register(c *gin.Context) {
 
 	existingUser, err := models.GetUserByUsername(user.Username)
 	if err != nil {
+		log.Printf("Error checking existing user: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing user"})
 		return
 	}
