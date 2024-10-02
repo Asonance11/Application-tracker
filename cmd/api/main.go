@@ -20,9 +20,7 @@ func main() {
 	// Load env variables
 	config.LoadEnvVariables()
 	dsn := os.Getenv("DB_URL")
-
 	port := os.Getenv("PORT")
-
 	if port == "" {
 		port = "8000"
 	}
@@ -31,8 +29,8 @@ func main() {
 	if err := database.InitDB(dsn); err != nil {
 		log.Fatalf("Failed to connect to the database %v", err)
 	}
-	db := database.GetDB()
 
+	db := database.GetDB()
 	if err := models.CreateJobStatusType(db); err != nil {
 		log.Fatalf("Failed to create job status type: %v", err)
 	}
@@ -49,13 +47,17 @@ func main() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"}, // Allow your local frontend
+		AllowOrigins: []string{
+			"http://localhost:3000",
+			"https://application-tracker-frontend-delta.vercel.app",
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
-			return origin == "http://localhost:3000"
+			return origin == "http://localhost:3000" ||
+				origin == "https://application-tracker-frontend-delta.vercel.app"
 		},
 		MaxAge: 12 * time.Hour,
 	}))
